@@ -96,6 +96,9 @@ func code2Session(c *gin.Context) {
 }
 
 /*
+中间件：https://blog.csdn.net/Shoulen/article/details/136141292
+參數：https://www.jianshu.com/p/916ce255de83
+
 HTTP上传参数3个部分：Header 、URL、 HTTP Body
 Header：键值对集合 Content-Type Accept
 
@@ -109,7 +112,7 @@ URL：请求路径， http://localhost:8080/user/add/1
 
 HTTP Body：请求体所携带的参数， Content-Type：application/json时 body是一个json串
     获取URL Query中的参数
-	  //http://localhost:8080/user/list?name=test&gender=xxxx'
+	  //http://localhost:8080/user/list?name=test&gender=xxxx'&habits=1,2,3,4,5&map["name"]=ji&map["age"]=18
 	  engine.GET("/user/list", func(ctx *gin.Context) {
 		//获取单个值
 		name := ctx.Query("name")
