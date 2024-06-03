@@ -1,12 +1,18 @@
 package controllers
 
-import "github.com/gin-gonic/gin"
+import (
+	"fmt"
+
+	"github.com/gin-gonic/gin"
+)
 
 type UserController struct {
 }
 
 func (this UserController) GetUserInfo(ctx *gin.Context) {
-	RetSuc(ctx, 0, "success", "user info", 1)
+	id := ctx.Param("id")
+	name := ctx.Param("name")
+	RetSuc(ctx, 0, "success", fmt.Sprintf("user info:%d %s", id, name), 1)
 }
 
 func (this UserController) GetList(ctx *gin.Context) {

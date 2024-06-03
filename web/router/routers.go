@@ -102,10 +102,11 @@ func code2Session(c *gin.Context) {
 HTTP上传参数3个部分：Header 、URL、 HTTP Body
 Header：键值对集合 Content-Type Accept
 
-URL：请求路径， http://localhost:8080/user/add/1
+GET请求
+URL：请求路径， http://localhost:8080/user/add/1/name
 	参数获取：ctx.Param("id")
 	//http://localhost:8080/user/100
-	engine.GET("/user/:id", func(ctx *gin.Context) {
+	engine.GET("/user/:id/:name", func(ctx *gin.Context) {
     	id := ctx.Param("id")
 	}
 
@@ -125,7 +126,10 @@ HTTP Body：请求体所携带的参数， Content-Type：application/json时 bo
 		fmt.Printf("%s, %s, %s, %s\n", name, gender, habits, works)
   })
 
+  POST请求
   HTTP Body中的参数
+    //http://localhost:8080/user/add
+	//body中添加name= gender= habits= worls=
     engine.POST("/user/add", func(ctx *gin.Context) {
 		//获取单个值
 		name := ctx.PostForm("name")
@@ -138,6 +142,7 @@ HTTP Body：请求体所携带的参数， Content-Type：application/json时 bo
 		fmt.Printf("%s,%s,%s,%s\n", name, gender, habits, works)
   })
 
+//通过绑定可以接受json的body数据
 //绑定请求参数 BindUri()或者ShouldBindUri()
 type User struct {
   Name  string `uri:"name"`
@@ -161,7 +166,10 @@ engine.GET("/user/list/:id/:name", func(ctx *gin.Context) {
         }
         fmt.Fprintf(ctx.Writer, "你输入的用户名为：%s,邮箱为：%s\n", u.Name, u.Email)
     })
+
+
 //绑定HTTP Body参数,POST请求时才会进行绑定  Bind BindJSON()
+//绑定时可以传入结构体或者param := make(map[string]interface{})
     engine.POST("/user/add", func(ctx *gin.Context) {
         var u User
         if err := ctx.Bind(&u); err != nil {
