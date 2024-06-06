@@ -8,11 +8,10 @@ import (
 	"net/http"
 	"web/auth"
 	"web/config"
-	"web/controllers"
+	"web/controller"
 	"web/logger"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rs/cors/wrapper/gin"
 )
 
 var mySigningKey = []byte("LicheeGameServer")
@@ -38,7 +37,7 @@ func Router() *gin.Engine {
 
 	user := r.Group("user")
 	{
-		userController := controllers.UserController{}
+		userController := controller.UserController{}
 		// /user/info
 		user.GET("/info:id", userController.GetUserInfo)
 		user.POST("/list", userController.GetList)

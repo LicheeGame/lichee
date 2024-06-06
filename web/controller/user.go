@@ -1,9 +1,9 @@
-package controllers
+package controller
 
 import (
 	"fmt"
 	"strconv"
-	"web/models"
+	"web/model"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,11 +13,10 @@ type UserController struct {
 
 func (this UserController) GetUserInfo(ctx *gin.Context) {
 	idStr := ctx.Param("openid")
-	name := ctx.Param("name")
 	openid, _ := strconv.Atoi(idStr)
 
 	//查询数据库
-	user, _ := models.GetUserTest(openid)
+	user, _ := model.GetUserTest(openid)
 
 	RetSuc(ctx, 0, "success", fmt.Sprintf("user info:%d %d", user.Openid, user.Score), 1)
 }

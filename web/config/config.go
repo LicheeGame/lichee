@@ -9,11 +9,19 @@ import (
 
 /*
 {
-	"appId": "123456789",
-	"secret": "maple123456",
+	wechat:{
+		"appId": "123456789",
+		"secret": "maple123456",
+	},
 	"host": {
 	  "address": "localhost",
 	  "port": 5799
+	},
+	"mongodb":{
+
+	},
+	"redis":{
+
 	}
 }
 */

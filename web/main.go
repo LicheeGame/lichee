@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	logger.Init(config.Conf.Log)
+	logger.Init(&config.Conf.Log)
 	r := router.Router()
 	if err := r.Run(fmt.Sprintf(":%d", config.Conf.Port)); err != nil {
 		panic(err)
