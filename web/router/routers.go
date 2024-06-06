@@ -9,8 +9,10 @@ import (
 	"web/auth"
 	"web/config"
 	"web/controllers"
+	"web/logger"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/cors/wrapper/gin"
 )
 
 var mySigningKey = []byte("LicheeGameServer")
@@ -21,7 +23,8 @@ const (
 )
 
 func Router() *gin.Engine {
-	r := gin.Default()
+	r := gin.New()
+	r.Use(logger.GinLogger(logger.Logger), logger.GinRecovery(logger.Logger, true))
 
 	r.GET("/hello", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "hello world")
