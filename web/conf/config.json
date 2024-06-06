@@ -1,0 +1,28 @@
+{
+	"log": {
+		"level": "info",
+		"filename": "log.json",
+		"maxsize": 128,
+		"maxage": 7,
+		"maxbackups": 2048
+	},
+	"wechats": [{
+			"appId": "123456789",
+			"secret": "maple123456"
+		},
+		{
+			"appId": "123456789",
+			"secret": "maple123456"
+		}
+	],
+	"port": 5799,
+	"mongodb": {
+		"dns": "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local",
+		"db": "minigame"
+	},
+	"redis": {
+		"addr": "localhost:6379",
+		"password": "",
+		"db": 0
+	}
+}

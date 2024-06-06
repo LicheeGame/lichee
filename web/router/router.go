@@ -67,7 +67,8 @@ func code2Session(c *gin.Context) {
 	appid := c.Query("appid")
 	code := c.Query("code")
 
-	if appid != config.Conf.Appid {
+	info := config.GetWechatInfo(appid)
+	if info == nil {
 		return
 	}
 
@@ -76,7 +77,7 @@ func code2Session(c *gin.Context) {
 	claims := jwtInstance.ParseJWT(token)
 	log.Println(claims)
 
-	url := fmt.Sprintf(code2sessionURL, config.Conf.Appid, config.Conf.Secret, code)
+	url := fmt.Sprintf(code2sessionURL, info.Appid, info.Secret, code)
 	resp, err := http.Get(url)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch session key and openId"})
