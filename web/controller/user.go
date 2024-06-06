@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"strconv"
+	"web/logger"
 	"web/model"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,8 @@ type UserController struct {
 }
 
 func (this UserController) GetUserInfo(ctx *gin.Context) {
+	logger.Logger.Info("GetUserInfo")
+
 	idStr := ctx.Param("openid")
 	openid, _ := strconv.Atoi(idStr)
 

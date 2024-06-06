@@ -10,6 +10,9 @@ import (
 
 func main() {
 	logger.Init(&config.Conf.Log)
+
+	logger.Info("main %s", "start")
+
 	r := router.Router()
 	if err := r.Run(fmt.Sprintf(":%d", config.Conf.Port)); err != nil {
 		panic(err)

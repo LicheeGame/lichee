@@ -16,7 +16,10 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-var Logger *zap.Logger
+var (
+	Logger        *zap.Logger
+	sugaredLogger *zap.SugaredLogger
+)
 
 func Init(cfg *config.LogConfig) {
 	writeSyncer := getLogWriter(cfg.Filename, cfg.MaxSize, cfg.MaxBackups, cfg.MaxAge)
@@ -30,7 +33,7 @@ func Init(cfg *config.LogConfig) {
 	core := zapcore.NewCore(encoder, writeSyncer, level)
 
 	Logger = zap.New(core, zap.AddCaller())
-	return
+	sugaredLogger = Logger.Sugar()
 }
 
 func getLogWriter(filename string, maxSize, maxBackup, maxAge int) zapcore.WriteSyncer {
@@ -119,5 +122,38 @@ func GinRecovery(logger *zap.Logger, stack bool) gin.HandlerFunc {
 			}
 		}()
 		c.Next()
+	}
+}
+
+func Debug(template string, args ...interface{}) {
+	if len(args) == 0 {
+		sugaredLogger.Debug(template)
+	} else {
+		sugaredLogger.Debugf(template, args...)
+	}
+}
+
+func Info(template string, args ...interface{}) {
+	if len(args) == 0 {
+		sugaredLogger.Infof(template)
+	} else {
+		sugaredLogger.Infof(template, args...)
+	}
+}
+
+func Warn(template string, args ...interface{}) {
+	if len(args) == 0 {
+		sugaredLogger.Warn(template)
+	} else {
+		sugaredLogger.Warnf(template, args...)
+	}
+
+}
+
+func Error(template string, args ...interface{}) {
+	if len(args) == 0 {
+		sugaredLogger.Errorf(template)
+	} else {
+		sugaredLogger.Errorf(template, args...)
 	}
 }
