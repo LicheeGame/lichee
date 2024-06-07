@@ -1,30 +1,32 @@
 package dao
 
 import (
+	"context"
 	"time"
 	"web/config"
+	"web/logger"
 
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var (
-	DB  *gorm.DB
-	err error
+	DB *mongo.Client
 )
 
-func init() {
-	DB, err = gorm.Open(mysql.Open(config.MysqDSN), &gorm.Config{})
+func InitDB() {
+	moongoConf := config.Conf.Mongodb
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	DB, err := mongo.Connect(ctx, options.Client().ApplyURI(moongoConf.Dns))
+	if err != nil {
+		logger.Error("mongodb connect error :%s", err)
+		return
+	}
+
+	err = DB.Ping(context.TODO(), nil)
 	if err != nil {
 		return
 	}
-
-	if DB.Error != nil {
-		return
-	}
-
-	sqlDB, _ := DB.DB()
-	sqlDB.SetMaxIdleConns(10)
-	sqlDB.SetMaxOpenConns(1024)
-	sqlDB.SetConnMaxLifetime(time.Hour)
 }
