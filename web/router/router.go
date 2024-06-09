@@ -35,14 +35,13 @@ func Router() *gin.Engine {
 		})
 	})
 
-	user := r.Group("user")
+	user := r.Group("minigame/api/user")
 	{
 		userController := controller.UserController{}
-		// /user/info
-		user.GET("/info:id", userController.GetUserInfo)
-		user.POST("/list", userController.GetList)
-		user.PUT("/add", userController.AddUser)
-		user.DELETE("/delete", userController.DeleteUser)
+		user.GET("/login/:code", userController.Login)
+		user.POST("/update", userController.UpdateUser)
+		user.GET("/ranklist", userController.GetRankUser)
+
 	}
 
 	r.GET("/code2Session", code2Session)

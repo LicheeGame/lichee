@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"web/cache"
 	"web/config"
 	"web/dao"
 	"web/logger"
@@ -13,8 +12,6 @@ import (
 func main() {
 	logger.Init(&config.Conf.Log)
 	dao.InitDB()
-	cache.InitRedis()
-
 	logger.Info("start router")
 
 	r := router.Router()

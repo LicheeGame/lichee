@@ -13,19 +13,20 @@ import (
 )
 
 type User struct {
-	ID        primitive.ObjectID `bson:"_id" json:"uid"`
+	ID        primitive.ObjectID `bson:"_id,omitempty" json:"uid,omitempty"`
 	Openid    string             `json:"-" bson:"openid"`
-	NickName  string             `json:"nickName" bson:"nickName"`
-	AvatarUrl string             `json:"avatarUrl" bson:"avatarUrl"`
-	Province  string             `json:"province" bson:"province"`
-	Score     int                `json:"score" bson:"score"`
+	NickName  string             `json:"nickName,omitempty" bson:"nickName,omitempty"`
+	AvatarUrl string             `json:"avatarUrl,omitempty" bson:"avatarUrl,omitempty"`
+	Province  string             `json:"province,omitempty" bson:"province,omitempty"`
+	Score     int                `json:"score,omitempty" bson:"score,omitempty"`
 }
 
 func (User) TableName() string {
 	return "users"
 }
 
-func GetUserInfo(openid string) (User, error) {
+// 通过openid查找用户信息
+func GetUserByOpenid(openid string) (User, error) {
 
 	coll := dao.DB.Database("minigame").Collection("users")
 	filter := bson.D{{"openid", openid}}
@@ -34,39 +35,71 @@ func GetUserInfo(openid string) (User, error) {
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			//没找到
+			logger.Info("没找到")
 		}
 	}
+	fmt.Printf("GetUserByOpenid: %v\n", result)
 	return result, err
-
 }
 
-func AddUser(openid string) string {
+func GetUserByUID(uid string) (User, error) {
+	coll := dao.DB.Database("minigame").Collection("users")
+	id, _ := primitive.ObjectIDFromHex(uid)
+	filter := bson.D{{"_id", id}}
+	var result User
+	err := coll.FindOne(context.TODO(), filter).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			//没找到
+			logger.Info("没找到")
+		}
+	}
+	fmt.Printf("GetUserByUID: %v\n", result)
+	return result, err
+}
 
+// 增
+func AddUser(openid string) (User, error) {
 	coll := dao.DB.Database("minigame").Collection("users")
 	user := User{Openid: openid}
 	result, err := coll.InsertOne(context.TODO(), &user)
 	if err == nil {
-		return result.InsertedID.(string)
+		fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
+		//return result.InsertedID.(primitive.ObjectID).String()
+		user.ID = result.InsertedID.(primitive.ObjectID)
+		return user, err
 	}
-	return ""
+	fmt.Printf("AddUser: %v\n", result)
+	return user, nil
 }
 
-func UpdateUser(openid string, name string, url string, province string, score int) {
+// 改
+func UpdateUser(uid string, name string, url string, province string, score int) bool {
 	coll := dao.DB.Database("minigame").Collection("users")
-	id, _ := primitive.ObjectIDFromHex(openid)
+	id, _ := primitive.ObjectIDFromHex(uid)
 	filter := bson.M{"_id": id}
 	update := bson.M{"$set": bson.M{"nickName": name, "avatarUrl": url, "province": province, "score": score}}
 	result, err := coll.UpdateOne(context.TODO(), filter, update)
+	fmt.Printf("UpdateUser: %v\n", result)
+	if err == nil && result.MatchedCount == 1 {
+		return true
+	}
+
 	if err != nil {
 		logger.Info(result.UpsertedID.(primitive.ObjectID).String())
 	}
+
+	return false
 }
 
-func GetRank() {
+// list
+func GetRankUser() []User {
 	filter := bson.D{}
 	opts := options.Find().SetSort(bson.D{{"score", -1}}).SetLimit(20)
+	coll := dao.DB.Database("minigame").Collection("users")
 	cursor, err := coll.Find(context.TODO(), filter, opts)
-	var results []Course
+
+	var results []User
 	if err = cursor.All(context.TODO(), &results); err != nil {
 		panic(err)
 	}
@@ -74,4 +107,6 @@ func GetRank() {
 		res, _ := bson.MarshalExtJSON(result, false, false)
 		fmt.Println(string(res))
 	}
+	fmt.Printf("GetRankUser: %v\n", results)
+	return results
 }
