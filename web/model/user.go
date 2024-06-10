@@ -26,9 +26,8 @@ func (User) TableName() string {
 }
 
 // 通过openid查找用户信息
-func GetUserByOpenid(openid string) (User, error) {
-
-	coll := dao.DB.Database("minigame").Collection("users")
+func GetUserByOpenid(appid string, openid string) (User, error) {
+	coll := dao.GetDB(appid).Collection("users")
 	filter := bson.D{{"openid", openid}}
 	var result User
 	err := coll.FindOne(context.TODO(), filter).Decode(&result)
@@ -42,8 +41,9 @@ func GetUserByOpenid(openid string) (User, error) {
 	return result, err
 }
 
-func GetUserByUID(uid string) (User, error) {
-	coll := dao.DB.Database("minigame").Collection("users")
+// 通过uid获取用户信息
+func GetUserByUID(appid string, uid string) (User, error) {
+	coll := dao.GetDB(appid).Collection("users")
 	id, _ := primitive.ObjectIDFromHex(uid)
 	filter := bson.D{{"_id", id}}
 	var result User
@@ -59,8 +59,8 @@ func GetUserByUID(uid string) (User, error) {
 }
 
 // 增
-func AddUser(openid string) (User, error) {
-	coll := dao.DB.Database("minigame").Collection("users")
+func AddUser(appid string, openid string) (User, error) {
+	coll := dao.GetDB(appid).Collection("users")
 	user := User{Openid: openid}
 	result, err := coll.InsertOne(context.TODO(), &user)
 	if err == nil {
@@ -74,11 +74,24 @@ func AddUser(openid string) (User, error) {
 }
 
 // 改
-func UpdateUser(uid string, name string, url string, province string, score int) bool {
-	coll := dao.DB.Database("minigame").Collection("users")
+func UpdateUser(appid string, uid string, name string, url string, province string, score int) bool {
+	coll := dao.GetDB(appid).Collection("users")
 	id, _ := primitive.ObjectIDFromHex(uid)
 	filter := bson.M{"_id": id}
-	update := bson.M{"$set": bson.M{"nickName": name, "avatarUrl": url, "province": province, "score": score}}
+	bsonMap := bson.M{}
+	if name != "" {
+		bsonMap["nickName"] = name
+	}
+	if url != "" {
+		bsonMap["avatarUrl"] = url
+	}
+	if province != "" {
+		bsonMap["province"] = province
+	}
+	if score != -1 {
+		bsonMap["score"] = score
+	}
+	update := bson.M{"$set": bsonMap}
 	result, err := coll.UpdateOne(context.TODO(), filter, update)
 	fmt.Printf("UpdateUser: %v\n", result)
 	if err == nil && result.MatchedCount == 1 {
@@ -93,20 +106,24 @@ func UpdateUser(uid string, name string, url string, province string, score int)
 }
 
 // list
-func GetRankUser() []User {
+func GetRankUser(appid string) ([]User, error) {
 	filter := bson.D{}
 	opts := options.Find().SetSort(bson.D{{"score", -1}}).SetLimit(20)
-	coll := dao.DB.Database("minigame").Collection("users")
+	coll := dao.GetDB(appid).Collection("users")
 	cursor, err := coll.Find(context.TODO(), filter, opts)
-
 	var results []User
-	if err = cursor.All(context.TODO(), &results); err != nil {
-		panic(err)
+
+	if err != nil {
+		return results, err
 	}
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return results, err
+	}
+
 	for _, result := range results {
 		res, _ := bson.MarshalExtJSON(result, false, false)
 		fmt.Println(string(res))
 	}
 	fmt.Printf("GetRankUser: %v\n", results)
-	return results
+	return results, nil
 }

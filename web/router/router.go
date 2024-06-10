@@ -25,6 +25,20 @@ func Router() *gin.Engine {
 	r := gin.New()
 	r.Use(logger.GinLogger(logger.Logger), logger.GinRecovery(logger.Logger, true))
 
+	user := r.Group("minigame/api/user")
+	{
+		userController := controller.UserController{}
+		user.GET("/login/:appid/:code", userController.Login)
+		user.POST("/update", userController.UpdateUser)
+		user.GET("/ranklist/:appid/:code", userController.GetRankUser)
+
+	}
+
+	r.GET("/code2Session", code2Session)
+	return r
+}
+
+/*
 	r.GET("/hello", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "hello world")
 	})
@@ -35,20 +49,6 @@ func Router() *gin.Engine {
 		})
 	})
 
-	user := r.Group("minigame/api/user")
-	{
-		userController := controller.UserController{}
-		user.GET("/login/:code", userController.Login)
-		user.POST("/update", userController.UpdateUser)
-		user.GET("/ranklist", userController.GetRankUser)
-
-	}
-
-	r.GET("/code2Session", code2Session)
-	return r
-}
-
-/*
 http://localhost:8375/code2Session?appid=wxb00370e58ccf0603&code=1111
 GET https://api.weixin.qq.com/sns/jscode2session?appid=APPID&secret=SECRET&js_code=JSCODE&grant_type=authorization_code
 {

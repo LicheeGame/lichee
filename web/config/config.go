@@ -74,3 +74,11 @@ func GetWechatInfo(appid string) *WechatConf {
 	}
 	return nil
 }
+
+func GetMongoDBByAppID(appid string) string {
+	return fmt.Sprintf("db_%s", appid)
+}
+
+func GetRedisDBRankByAppID(appid string) string {
+	return fmt.Sprintf("rank_%s", appid)
+}

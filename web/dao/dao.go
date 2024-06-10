@@ -32,3 +32,8 @@ func InitDB() {
 	}
 	DB = client
 }
+
+// 根据appid获取db
+func GetDB(appid string) *mongo.Database {
+	return DB.Database(config.GetMongoDBByAppID(appid))
+}
