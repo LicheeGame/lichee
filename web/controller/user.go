@@ -41,7 +41,7 @@ func (u UserController) Login(ctx *gin.Context) {
 	user, err := model.GetUserByOpenid(appid, openid)
 	if err == nil && user.Openid == openid && !user.ID.IsZero() {
 		//登录成功
-		user.Token = auth.JWT.GenerateJWT(user.ID.Hex(), 2)
+		user.Token = auth.JWT.GenerateJWT(appid, user.ID.Hex(), 2)
 		RetSuc(ctx, 0, "success", user, 1)
 		return
 	}
@@ -50,7 +50,7 @@ func (u UserController) Login(ctx *gin.Context) {
 	user, err = model.AddUser(appid, openid)
 	if err == nil && !user.ID.IsZero() {
 		//注册成功
-		user.Token = auth.JWT.GenerateJWT(user.ID.Hex(), 2)
+		user.Token = auth.JWT.GenerateJWT(appid, user.ID.Hex(), 2)
 		RetSuc(ctx, 0, "success", user, 1)
 		return
 	}
@@ -59,9 +59,9 @@ func (u UserController) Login(ctx *gin.Context) {
 }
 
 func (u UserController) GetRankUser(ctx *gin.Context) {
+	//token获得的uid和appid
 	uid := ctx.GetString("uid")
-	//获取appid
-	appid := ctx.Param("appid")
+	appid := ctx.GetString("appid")
 	if uid == "" || appid == "" || config.GetWechatInfo(appid) == nil {
 		RetErr(ctx, 400, "code appid error")
 		return
@@ -76,9 +76,9 @@ func (u UserController) GetRankUser(ctx *gin.Context) {
 }
 
 func (u UserController) UpdateUser(ctx *gin.Context) {
+	//token获得的uid和appid
 	uid := ctx.GetString("uid")
-	//带默认值
-	appid := ctx.PostForm("appid")
+	appid := ctx.GetString("appid")
 	if uid == "" || appid == "" || config.GetWechatInfo(appid) == nil {
 		RetErr(ctx, 400, "uid appi error")
 		return

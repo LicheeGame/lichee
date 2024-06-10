@@ -18,7 +18,7 @@ func Router() *gin.Engine {
 		userController := controller.UserController{}
 		user.GET("/login/:appid/:code", userController.Login)
 		user.POST("/update", JwtAuth(), userController.UpdateUser)
-		user.GET("/ranklist/:appid/:code", JwtAuth(), userController.GetRankUser)
+		user.GET("/ranklist", JwtAuth(), userController.GetRankUser)
 	}
 
 	//r.GET("/code2Session", code2Session)
@@ -39,7 +39,7 @@ func JwtAuth() gin.HandlerFunc {
 
 		// Parse token
 		customClaims := auth.JWT.ParseJWT(tokenString)
-		if customClaims == nil || customClaims.UID == "" {
+		if customClaims == nil || customClaims.UID == "" || customClaims.Appid == "" {
 			controller.RetErr(c, 400, "token error")
 			c.Abort()
 			return
@@ -47,6 +47,7 @@ func JwtAuth() gin.HandlerFunc {
 
 		//将uid写入请求参数
 		c.Set("uid", customClaims.UID)
+		c.Set("appid", customClaims.Appid)
 		c.Next()
 	}
 }

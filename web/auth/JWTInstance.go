@@ -20,18 +20,20 @@ func InitJwt() {
 }
 
 type CustomClaims struct {
-	UID string `json:"uid"`
+	UID   string `json:"uid"`
+	Appid string `json:"appid"`
 	jwt.RegisteredClaims
 }
 
 // GenerateJWT 生成JWT
-func (j JWTInstance) GenerateJWT(uid string, count time.Duration) string {
+func (j JWTInstance) GenerateJWT(appid string, uid string, count time.Duration) string {
 	if count == 0 {
 		count = 2
 	}
 	// 设置一些声明
 	claims := CustomClaims{
 		uid,
+		appid,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(count * time.Hour)), //有效时间
 			IssuedAt:  jwt.NewNumericDate(time.Now()),                        //签发时间
