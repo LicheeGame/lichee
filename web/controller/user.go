@@ -2,10 +2,15 @@ package controller
 
 import (
 	"strconv"
+	"web/auth"
 	"web/config"
 	"web/model"
 
 	"github.com/gin-gonic/gin"
+)
+
+var (
+	UseTest = true
 )
 
 type UserController struct {
@@ -21,18 +26,22 @@ func (u UserController) Login(ctx *gin.Context) {
 		return
 	}
 
-	//根据code获取openid
 	openid := code
 
-	if openid == "" {
-		RetErr(ctx, 400, "openid error")
-		return
+	if !UseTest {
+		//根据code获取openid
+		openid, err := model.Code2Session(appid, code)
+		if openid == "" || err != nil {
+			RetErr(ctx, 400, "openid error")
+			return
+		}
 	}
 
 	//根据openid获取用户信息
 	user, err := model.GetUserByOpenid(appid, openid)
 	if err == nil && user.Openid == openid && !user.ID.IsZero() {
 		//登录成功
+		user.Token = auth.JWT.GenerateJWT(user.ID.Hex(), 2)
 		RetSuc(ctx, 0, "success", user, 1)
 		return
 	}
@@ -41,6 +50,7 @@ func (u UserController) Login(ctx *gin.Context) {
 	user, err = model.AddUser(appid, openid)
 	if err == nil && !user.ID.IsZero() {
 		//注册成功
+		user.Token = auth.JWT.GenerateJWT(user.ID.Hex(), 2)
 		RetSuc(ctx, 0, "success", user, 1)
 		return
 	}
@@ -49,10 +59,10 @@ func (u UserController) Login(ctx *gin.Context) {
 }
 
 func (u UserController) GetRankUser(ctx *gin.Context) {
-	//获取appid,code
+	uid := ctx.GetString("uid")
+	//获取appid
 	appid := ctx.Param("appid")
-	code := ctx.Param("code")
-	if code == "" || appid == "" || config.GetWechatInfo(appid) == nil {
+	if uid == "" || appid == "" || config.GetWechatInfo(appid) == nil {
 		RetErr(ctx, 400, "code appid error")
 		return
 	}
@@ -66,8 +76,8 @@ func (u UserController) GetRankUser(ctx *gin.Context) {
 }
 
 func (u UserController) UpdateUser(ctx *gin.Context) {
+	uid := ctx.GetString("uid")
 	//带默认值
-	uid := ctx.PostForm("uid")
 	appid := ctx.PostForm("appid")
 	if uid == "" || appid == "" || config.GetWechatInfo(appid) == nil {
 		RetErr(ctx, 400, "uid appi error")

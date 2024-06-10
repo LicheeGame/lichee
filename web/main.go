@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"web/auth"
 	"web/config"
 	"web/dao"
 	"web/logger"
@@ -11,6 +12,7 @@ import (
 
 func main() {
 	logger.Init(&config.Conf.Log)
+	auth.InitJwt()
 	dao.InitDB()
 	logger.Info("start router")
 

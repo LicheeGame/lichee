@@ -6,3 +6,5 @@
 
 1. wechat code2Session
 2. rank
+
+go build -gcflags "all=-N -l"

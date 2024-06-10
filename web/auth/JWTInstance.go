@@ -6,27 +6,32 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+var (
+	MySigningKey = []byte("LicheeGameServer")
+	JWT          JWTInstance
+)
+
 type JWTInstance struct {
 	SecretKey []byte
 }
 
-func InitJwt(SecretKey []byte) JWTInstance {
-	return JWTInstance{SecretKey}
+func InitJwt() {
+	JWT = JWTInstance{MySigningKey}
 }
 
 type CustomClaims struct {
-	OpenID string `json:"openid"`
+	UID string `json:"uid"`
 	jwt.RegisteredClaims
 }
 
 // GenerateJWT 生成JWT
-func (this JWTInstance) GenerateJWT(openid string, count time.Duration) string {
+func (j JWTInstance) GenerateJWT(uid string, count time.Duration) string {
 	if count == 0 {
 		count = 2
 	}
 	// 设置一些声明
 	claims := CustomClaims{
-		openid,
+		uid,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(count * time.Hour)), //有效时间
 			IssuedAt:  jwt.NewNumericDate(time.Now()),                        //签发时间
@@ -41,7 +46,7 @@ func (this JWTInstance) GenerateJWT(openid string, count time.Duration) string {
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	// 设置签名并获取token字符串
-	token, err := jwtToken.SignedString(this.SecretKey)
+	token, err := jwtToken.SignedString(j.SecretKey)
 	if err != nil {
 		return ""
 	}
@@ -50,10 +55,10 @@ func (this JWTInstance) GenerateJWT(openid string, count time.Duration) string {
 }
 
 // ParseJWT 解析JWT
-func (this JWTInstance) ParseJWT(tokenString string) *CustomClaims {
+func (j JWTInstance) ParseJWT(tokenString string) *CustomClaims {
 	// 解析JWT字符串
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return this.SecretKey, nil
+		return j.SecretKey, nil
 	})
 
 	if err != nil {

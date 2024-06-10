@@ -2,7 +2,12 @@ package model
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"web/config"
 	"web/dao"
 	"web/logger"
 
@@ -13,12 +18,13 @@ import (
 )
 
 type User struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty" json:"uid,omitempty"`
+	ID        primitive.ObjectID `json:"uid,omitempty" bson:"_id,omitempty"`
 	Openid    string             `json:"-" bson:"openid"`
 	NickName  string             `json:"nickName,omitempty" bson:"nickName,omitempty"`
 	AvatarUrl string             `json:"avatarUrl,omitempty" bson:"avatarUrl,omitempty"`
 	Province  string             `json:"province,omitempty" bson:"province,omitempty"`
 	Score     int                `json:"score,omitempty" bson:"score,omitempty"`
+	Token     string             `json:"token,omitempty" bson:"-"`
 }
 
 func (User) TableName() string {
@@ -126,4 +132,50 @@ func GetRankUser(appid string) ([]User, error) {
 	}
 	fmt.Printf("GetRankUser: %v\n", results)
 	return results, nil
+}
+
+const (
+	code2sessionURL = "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code"
+)
+
+/*
+http://localhost:8375/code2Session?appid=wxb00370e58ccf0603&code=1111
+GET https://api.weixin.qq.com/sns/jscode2session?appid=APPID&secret=SECRET&js_code=JSCODE&grant_type=authorization_code
+{
+	"openid":"xxxxxx",
+	"session_key":"xxxxx",
+	"unionid":"xxxxx",
+	"errcode":0,
+	"errmsg":"xxxxx"
+}
+*/
+
+/*
+	token := jwtInstance.GenerateJWT(appid, 2)
+	log.Println(token)
+	claims := jwtInstance.ParseJWT(token)
+	log.Println(claims)
+*/
+
+func Code2Session(appid string, code string) (string, error) {
+	info := config.GetWechatInfo(appid)
+	if info == nil {
+		return "", errors.New("appid error")
+	}
+
+	resp, err := http.Get(fmt.Sprintf("https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",
+		info.Appid, info.Secret, code))
+	if err != nil {
+		return "", err //Failed to fetch session key and openId
+	}
+
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	var result map[string]interface{}
+	json.Unmarshal(body, &result)
+	if result["errcode"] != 0 {
+		return "", errors.New(result["errmsg"].(string))
+	}
+
+	return result["openid"].(string), nil
 }
