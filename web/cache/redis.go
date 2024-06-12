@@ -9,38 +9,38 @@ import (
 
 var (
 	ctx context.Context
-	rdb *redis.Client
+	Rdb *redis.Client
 )
 
 func InitRedis() {
 	ctx = context.Background()
-	rdb = redis.NewClient(&redis.Options{
+	Rdb = redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "", // no password set
 		DB:       0,  // use default DB
 	})
 
-	err := rdb.Set(ctx, "key", "value", 0).Err()
-	if err != nil {
-		panic(err)
-	}
+	/*
+		err := rdb.Set(ctx, "key", "value", 0).Err()
+		if err != nil {
+			panic(err)
+		}
 
-	val, err := rdb.Get(ctx, "key").Result()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("key", val)
+		val, err := rdb.Get(ctx, "key").Result()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("key", val)
+	*/
+}
 
-	rdb.ZAdd(ctx, "leaderboard", redis.Z{Score: 100, Member: "player1"}).Err()
+// 设置分数
+func SetUserScore(appid string, uid string, score int) {
+	Rdb.ZAdd(ctx, fmt.Sprintf("%s_rank", appid), redis.Z{Score: float64(score), Member: uid}).Err()
+}
 
-	// 获取排行榜上的成员
-	leaderboard, err := rdb.ZRevRangeWithScores(ctx, "leaderboard", 0, -1).Result()
-	if err != nil {
-		panic(err)
-	}
-
-	for _, scoreMember := range leaderboard {
-		fmt.Printf("Member: %s, Score: %f\n", scoreMember.Member, scoreMember.Score)
-	}
-
+func GetUserScoreRank(appid string) ([]redis.Z, error) {
+	// 获取排行榜上的成员前20
+	scoreRank, err := Rdb.ZRevRangeWithScores(ctx, fmt.Sprintf("%s_rank", appid), 0, 19).Result()
+	return scoreRank, err
 }

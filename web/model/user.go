@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"web/cache"
 	"web/config"
 	"web/dao"
 	"web/logger"
@@ -101,6 +102,9 @@ func UpdateUser(appid string, uid string, name string, url string, province stri
 	result, err := coll.UpdateOne(context.TODO(), filter, update)
 	fmt.Printf("UpdateUser: %v\n", result)
 	if err == nil && result.MatchedCount == 1 {
+		if score != -1 {
+			cache.SetUserScore(appid, uid, score)
+		}
 		return true
 	}
 
@@ -113,6 +117,22 @@ func UpdateUser(appid string, uid string, name string, url string, province stri
 
 // list
 func GetRankUser(appid string) ([]User, error) {
+
+	scoreRank, err := cache.GetUserScoreRank(appid)
+	if len(scoreRank) != 0 || err == nil {
+		//redis有排行榜
+		var results []User
+		for _, scoreMember := range scoreRank {
+			//fmt.Printf("Member: %s, Score: %f\n", scoreMember.Member, scoreMember.Score)
+			uer, err := GetUserByUID(appid, scoreMember.Member.(string))
+			if err == nil {
+				results = append(results, uer)
+			}
+		}
+		return results, nil
+	}
+
+	//从mongodb中获取
 	filter := bson.D{}
 	opts := options.Find().SetSort(bson.D{{"score", -1}}).SetLimit(20)
 	coll := dao.GetDB(appid).Collection("users")
@@ -127,6 +147,8 @@ func GetRankUser(appid string) ([]User, error) {
 	}
 
 	for _, result := range results {
+		//写redis
+		cache.SetUserScore(appid, result.ID.Hex(), result.Score)
 		res, _ := bson.MarshalExtJSON(result, false, false)
 		fmt.Println(string(res))
 	}
