@@ -152,6 +152,9 @@ func GetRankUser(appid string) ([]User, error) {
 		res, _ := bson.MarshalExtJSON(result, false, false)
 		fmt.Println(string(res))
 	}
+	if len(results) != 0 {
+		cache.SetUserRankExpire(appid)
+	}
 	fmt.Printf("GetRankUser: %v\n", results)
 	return results, nil
 }

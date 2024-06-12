@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -37,6 +38,10 @@ func InitRedis() {
 // 设置分数
 func SetUserScore(appid string, uid string, score int) {
 	Rdb.ZAdd(ctx, fmt.Sprintf("%s_rank", appid), redis.Z{Score: float64(score), Member: uid}).Err()
+}
+
+func SetUserRankExpire(appid string) {
+	Rdb.Expire(ctx, fmt.Sprintf("%s_rank", appid), 3600*time.Second).Err()
 }
 
 func GetUserScoreRank(appid string) ([]redis.Z, error) {
