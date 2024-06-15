@@ -41,7 +41,7 @@ func SetUserScore(appid string, uid string, score int) {
 }
 
 func SetUserRankExpire(appid string) {
-	Rdb.Expire(ctx, fmt.Sprintf("%s_rank", appid), 3600*time.Second).Err()
+	Rdb.Expire(ctx, fmt.Sprintf("%s_rank", appid), 60*time.Second).Err()
 }
 
 func GetUserScoreRank(appid string) ([]redis.Z, error) {

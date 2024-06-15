@@ -7,15 +7,15 @@
 		"maxbackups": 2048
 	},
 	"wechats": [{
-			"appId": "123456789",
-			"secret": "maple123456"
+			"appId": "wx4e4e1d9e57485194",
+			"secret": "7880a360a84da85dda097380f7b1d4d7"
 		},
 		{
 			"appId": "123456789",
 			"secret": "maple123456"
 		}
 	],
-	"port": 5799,
+	"port": 7456,
 	"mongodb": {
 		"dns": "mongodb://localhost:27017",
 		"db": "minigame"

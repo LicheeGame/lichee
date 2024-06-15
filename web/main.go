@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"web/auth"
+	"web/cache"
 	"web/config"
 	"web/dao"
 	"web/logger"
@@ -13,6 +14,7 @@ import (
 func main() {
 	logger.Init(&config.Conf.Log)
 	auth.InitJwt()
+	cache.InitRedis()
 	dao.InitDB()
 	logger.Info("start router")
 
@@ -20,5 +22,4 @@ func main() {
 	if err := r.Run(fmt.Sprintf(":%d", config.Conf.Port)); err != nil {
 		panic(err)
 	}
-	//r.RunTLS(":8080", "./testdata/server.pem", "./testdata/server.key")
 }

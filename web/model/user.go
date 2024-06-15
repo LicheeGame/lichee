@@ -119,7 +119,7 @@ func UpdateUser(appid string, uid string, name string, url string, province stri
 func GetRankUser(appid string) ([]User, error) {
 
 	scoreRank, err := cache.GetUserScoreRank(appid)
-	if len(scoreRank) != 0 || err == nil {
+	if len(scoreRank) != 0 && err == nil {
 		//redis有排行榜
 		var results []User
 		for _, scoreMember := range scoreRank {
