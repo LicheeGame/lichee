@@ -37,6 +37,7 @@ type Config struct {
 	Wechats []WechatConf `json:"wechats"`
 	Mongodb MongoConf    `mapstructure:"mongodb"`
 	Redis   RedisoConf   `json:"redis"`
+	TestDev bool         `json:testdev`
 }
 
 var (

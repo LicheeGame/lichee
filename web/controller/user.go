@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"strconv"
 	"web/auth"
 	"web/config"
 	"web/model"
@@ -19,8 +18,8 @@ type UserController struct {
 // /:appid/:code
 func (u UserController) Login(ctx *gin.Context) {
 	//获取appid,code
-	appid := ctx.Param("appid")
-	code := ctx.Param("code")
+	appid := ctx.Query("appid") //ctx.Param("appid")
+	code := ctx.Query("code")   //ctx.Param("code")
 	if code == "" || appid == "" || config.GetWechatInfo(appid) == nil {
 		RetErr(ctx, 400, "code appid error")
 		return
@@ -28,7 +27,7 @@ func (u UserController) Login(ctx *gin.Context) {
 
 	openid := code
 
-	if !UseTest {
+	if !config.Conf.TestDev {
 		//根据code获取openid
 		openid, err := model.Code2Session(appid, code)
 		if openid == "" || err != nil {
@@ -75,6 +74,13 @@ func (u UserController) GetRankUser(ctx *gin.Context) {
 	}
 }
 
+type UserUpdate struct {
+	NickName  string `json:"nickName,omitempty"`
+	AvatarUrl string `json:"avatarUrl,omitempty"`
+	Province  string `json:"province,omitempty"`
+	Score     int    `json:"score,omitempty"`
+}
+
 func (u UserController) UpdateUser(ctx *gin.Context) {
 	//token获得的uid和appid
 	uid := ctx.GetString("uid")
@@ -84,12 +90,27 @@ func (u UserController) UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	name := ctx.DefaultPostForm("name", "")
-	url := ctx.DefaultPostForm("url", "")
-	province := ctx.DefaultPostForm("province", "")
-	scoreStr := ctx.DefaultPostForm("score", "-1")
-	score, _ := strconv.Atoi(scoreStr)
-	ret := model.UpdateUser(appid, uid, name, url, province, score)
+	var user UserUpdate
+	if err := ctx.BindJSON(&user); err != nil {
+		return
+	}
+	ret := model.UpdateUser(appid, uid, user.NickName, user.AvatarUrl, user.Province, user.Score)
+
+	/*
+		name := ctx.DefaultQuery("nickName", "")
+		url := ctx.DefaultQuery("avatarUrl", "")
+		province := ctx.DefaultQuery("province", "")
+		scoreStr := ctx.DefaultQuery("score", "-1")
+		score, _ := strconv.Atoi(scoreStr)
+		ret := model.UpdateUser(appid, uid, name, url, province, score)
+
+			var user UserUpdate
+			if err := ctx.BindUri(&user); err != nil {
+				return
+			}
+
+			ret := model.UpdateUser(appid, uid, user.NickName, user.AvatarUrl, user.Province, user.Score)
+	*/
 	if ret {
 		RetSuc(ctx, 0, "success", "update user", 1)
 	} else {

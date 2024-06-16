@@ -16,7 +16,7 @@ func Router() *gin.Engine {
 	user := r.Group("minigame/api/user")
 	{
 		userController := controller.UserController{}
-		user.GET("/login/:appid/:code", userController.Login)
+		user.GET("/login", userController.Login)
 		user.POST("/update", JwtAuth(), userController.UpdateUser)
 		user.GET("/ranklist", JwtAuth(), userController.GetRankUser)
 	}
