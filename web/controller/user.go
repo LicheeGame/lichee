@@ -77,7 +77,7 @@ func (u UserController) GetRankUser(ctx *gin.Context) {
 type UserUpdate struct {
 	NickName  string `json:"nickName,omitempty"`
 	AvatarUrl string `json:"avatarUrl,omitempty"`
-	Province  string `json:"province,omitempty"`
+	Province  int    `json:"province,omitempty"`
 	Score     int    `json:"score,omitempty"`
 }
 
@@ -92,25 +92,11 @@ func (u UserController) UpdateUser(ctx *gin.Context) {
 
 	var user UserUpdate
 	if err := ctx.BindJSON(&user); err != nil {
+		RetErr(ctx, 400, "json body error")
 		return
 	}
 	ret := model.UpdateUser(appid, uid, user.NickName, user.AvatarUrl, user.Province, user.Score)
 
-	/*
-		name := ctx.DefaultQuery("nickName", "")
-		url := ctx.DefaultQuery("avatarUrl", "")
-		province := ctx.DefaultQuery("province", "")
-		scoreStr := ctx.DefaultQuery("score", "-1")
-		score, _ := strconv.Atoi(scoreStr)
-		ret := model.UpdateUser(appid, uid, name, url, province, score)
-
-			var user UserUpdate
-			if err := ctx.BindUri(&user); err != nil {
-				return
-			}
-
-			ret := model.UpdateUser(appid, uid, user.NickName, user.AvatarUrl, user.Province, user.Score)
-	*/
 	if ret {
 		RetSuc(ctx, 0, "success", "update user", 1)
 	} else {

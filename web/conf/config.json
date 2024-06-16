@@ -25,5 +25,5 @@
 		"password": "",
 		"db": 0
 	},
-	"TestDev":true
+	"TestDev":false
 }

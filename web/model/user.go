@@ -22,7 +22,7 @@ type User struct {
 	Openid    string             `json:"-" bson:"openid"`
 	NickName  string             `json:"nickName,omitempty" bson:"nickName,omitempty"`
 	AvatarUrl string             `json:"avatarUrl,omitempty" bson:"avatarUrl,omitempty"`
-	Province  string             `json:"province,omitempty" bson:"province,omitempty"`
+	Province  int                `json:"province,omitempty" bson:"province,omitempty"`
 	Score     int                `json:"score,omitempty" bson:"score,omitempty"`
 	Token     string             `json:"token,omitempty" bson:"-"`
 }
@@ -43,7 +43,7 @@ func GetUserByOpenid(appid string, openid string) (User, error) {
 			logger.Info("没找到")
 		}
 	}
-	fmt.Printf("GetUserByOpenid: %v\n", result)
+	logger.Info("GetUserByOpenid: %v", result)
 	return result, err
 }
 
@@ -60,7 +60,7 @@ func GetUserByUID(appid string, uid string) (User, error) {
 			logger.Info("没找到")
 		}
 	}
-	fmt.Printf("GetUserByUID: %v\n", result)
+	logger.Info("GetUserByUID: %v", result)
 	return result, err
 }
 
@@ -80,7 +80,7 @@ func AddUser(appid string, openid string) (User, error) {
 }
 
 // 改
-func UpdateUser(appid string, uid string, name string, url string, province string, score int) bool {
+func UpdateUser(appid string, uid string, name string, url string, province int, score int) bool {
 	coll := dao.GetDB(appid).Collection("users")
 	id, _ := primitive.ObjectIDFromHex(uid)
 	filter := bson.M{"_id": id}
@@ -91,7 +91,7 @@ func UpdateUser(appid string, uid string, name string, url string, province stri
 	if url != "" {
 		bsonMap["avatarUrl"] = url
 	}
-	if province != "" {
+	if province != -1 {
 		bsonMap["province"] = province
 	}
 	if score != -1 {
