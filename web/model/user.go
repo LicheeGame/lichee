@@ -40,10 +40,10 @@ func GetUserByOpenid(appid string, openid string) (User, error) {
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			//没找到
-			logger.Info("没找到")
+			logger.Info("not find by appid")
 		}
 	}
-	logger.Info("GetUserByOpenid: %v", result)
+	logger.Info("GetUserByOpenid: appid:%s openid:%s %v", appid, openid, result)
 	return result, err
 }
 
@@ -57,10 +57,10 @@ func GetUserByUID(appid string, uid string) (User, error) {
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			//没找到
-			logger.Info("没找到")
+			logger.Info("not find by uid")
 		}
 	}
-	logger.Info("GetUserByUID: %v", result)
+	logger.Info("GetUserByUID: appid:%s openid:%s %v", appid, uid, result)
 	return result, err
 }
 
@@ -70,12 +70,10 @@ func AddUser(appid string, openid string) (User, error) {
 	user := User{Openid: openid}
 	result, err := coll.InsertOne(context.TODO(), &user)
 	if err == nil {
-		fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
-		//return result.InsertedID.(primitive.ObjectID).String()
 		user.ID = result.InsertedID.(primitive.ObjectID)
+		logger.Info("AddUser: appid:%s openid:%s %v", appid, openid, user)
 		return user, err
 	}
-	fmt.Printf("AddUser: %v\n", result)
 	return user, nil
 }
 
@@ -99,7 +97,7 @@ func UpdateUser(appid string, uid string, name string, url string, province int,
 	}
 	update := bson.M{"$set": bsonMap}
 	result, err := coll.UpdateOne(context.TODO(), filter, update)
-	fmt.Printf("UpdateUser: %v\n", result)
+	logger.Info("UpdateUser appid:%s uid:%s %v", appid, uid, result)
 	if err == nil && result.MatchedCount == 1 {
 		if score != -1 {
 			cache.SetUserScore(appid, uid, score)
@@ -122,7 +120,6 @@ func GetRankUser(appid string) ([]User, error) {
 		//redis有排行榜
 		var results []User
 		for _, scoreMember := range scoreRank {
-			//fmt.Printf("Member: %s, Score: %f\n", scoreMember.Member, scoreMember.Score)
 			uer, err := GetUserByUID(appid, scoreMember.Member.(string))
 			if err == nil {
 				results = append(results, uer)
@@ -148,13 +145,13 @@ func GetRankUser(appid string) ([]User, error) {
 	for _, result := range results {
 		//写redis
 		cache.SetUserScore(appid, result.ID.Hex(), result.Score)
-		res, _ := bson.MarshalExtJSON(result, false, false)
-		fmt.Println(string(res))
+		//res, _ := bson.MarshalExtJSON(result, false, false)
+		//fmt.Println(string(res))
 	}
 	if len(results) != 0 {
 		cache.SetUserRankExpire(appid)
 	}
-	fmt.Printf("GetRankUser: %v\n", results)
+	logger.Info("GetRankUser appid:%s  %v", appid, results)
 	return results, nil
 }
 

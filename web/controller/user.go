@@ -29,11 +29,12 @@ func (u UserController) Login(ctx *gin.Context) {
 
 	if !config.Conf.TestDev {
 		//根据code获取openid
-		openid, err := model.Code2Session(appid, code)
-		if openid == "" || err != nil {
+		rerOpenid, err := model.Code2Session(appid, code)
+		if rerOpenid == "" || err != nil {
 			RetErr(ctx, 400, "openid error")
 			return
 		}
+		openid = rerOpenid
 	}
 
 	//根据openid获取用户信息
